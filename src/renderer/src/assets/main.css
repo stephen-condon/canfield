@@ -1,0 +1,214 @@
+/* =========================================================
+   Canfield Solitaire – Global Design System
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@700&display=swap');
+
+/* ---- CSS Variables ---- */
+:root {
+  --color-bg: #0d4f30;
+  --color-bg-dark: #093d24;
+  --color-bg-felt: #115c37;
+  --color-surface: rgba(255, 255, 255, 0.07);
+  --color-surface-hover: rgba(255, 255, 255, 0.13);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-text: #f0ebe1;
+  --color-text-muted: rgba(240, 235, 225, 0.55);
+  --color-accent: #f5c842;
+  --color-accent-hover: #fad860;
+  --color-danger: #e05252;
+  --color-danger-hover: #e87070;
+  --color-success: #4caf7d;
+
+  --card-width: 80px;
+  --card-height: 112px;
+  --card-radius: 8px;
+  --tableau-offset: 28px;   /* vertical overlap between tableau cards */
+
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.45);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-btn: 0 2px 8px rgba(0,0,0,0.35);
+
+  --transition-fast: 150ms ease;
+  --transition-std: 240ms ease;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --custom-bg: none;
+  --custom-card-back: none;
+
+  --board-max-width: 900px;
+}
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-btn);
+  text-decoration: none;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #1a1a1a;
+}
+.btn-primary:hover { background: var(--color-accent-hover); box-shadow: 0 4px 20px rgba(245,200,66,0.45); }
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn-secondary:hover { background: var(--color-surface-hover); }
+
+.btn-danger {
+  background: rgba(224, 82, 82, 0.15);
+  color: var(--color-danger);
+  border: 1px solid rgba(224, 82, 82, 0.3);
+}
+.btn-danger:hover { background: rgba(224, 82, 82, 0.25); color: var(--color-danger-hover); }
+
+.btn-sm { padding: 8px 18px; font-size: 13px; border-radius: var(--radius-sm); }
+.btn-lg { padding: 16px 40px; font-size: 17px; min-width: 220px; }
+
+/* ---- Glass panel ---- */
+.glass {
+  background: rgba(10, 36, 22, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* ---- Cards ---- */
+.card-slot {
+  width: var(--card-width);
+  height: var(--card-height);
+  border: 2px dashed rgba(255,255,255,0.18);
+  border-radius: var(--card-radius);
+  background: rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.25);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.playing-card {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-card);
+  cursor: grab;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: white;
+  border: 1px solid #ccc;
+}
+.playing-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.55); }
+.playing-card.dragging { opacity: 0.7; transform: scale(1.04) rotate(2deg); cursor: grabbing; }
+.playing-card.face-down {
+  cursor: default;
+  background: #1a5c85;
+}
+.playing-card.face-down:hover { transform: none; }
+
+/* suit colours */
+.rank-red { color: #c0392b; }
+.rank-black { color: #1a1a1a; }
+
+/* pip corner labels */
+.card-corner {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-weight: 700;
+  font-size: 13px;
+}
+.card-corner-bottom {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  transform: rotate(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-weight: 700;
+  font-size: 13px;
+}
+.card-suit-label { font-size: 11px; }
+.card-center-suit { font-size: 36px; display: flex; align-items: center; justify-content: center; height: 100%; }
+
+/* card back pattern */
+.card-back-pattern {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 8px);
+  border-radius: var(--card-radius);
+}
+
+/* drop zone highlight */
+.drop-active { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ---- Scrollbars ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+/* ---- Utilities ---- */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+.text-muted { color: var(--color-text-muted); }
+.text-accent { color: var(--color-accent); }
+.title-font { font-family: 'Cinzel', serif; }
+
+.centered-container {
+  width: 100%;
+  max-width: var(--board-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
