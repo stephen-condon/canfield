@@ -63,9 +63,10 @@
                 :draggable="false"
                 :z-index="10"
               />
-              <span v-else class="foundation-base-hint text-muted">{{
-                dynamicFoundationSuits[fi]
-              }}</span>
+              <div v-else class="foundation-base-hint text-muted">
+                <div class="hint-rank">{{ baseRankLabel }}</div>
+                <div class="hint-suit">{{ dynamicFoundationSuits[fi] }}</div>
+              </div>
             </div>
           </div>
           <span class="zone-caption text-muted">Foundations</span>
@@ -132,7 +133,9 @@
           @drop="onDropToTableau(ci)"
         >
           <div v-if="column.length === 0" class="card-slot tableau-empty-slot">
-            <span class="text-muted" style="font-size: 22px">♦</span>
+            <span v-if="state.reserve.length > 0" class="text-muted" style="font-size: 22px">
+              ♦
+            </span>
           </div>
           <div
             v-for="(card, cardIdx) in column"
@@ -207,11 +210,20 @@ const SUIT_MAP: Record<Suit, string> = {
   spades: '♠'
 }
 
+const RANK_LABELS: Record<number, string> = {
+  1: 'A',
+  11: 'J',
+  12: 'Q',
+  13: 'K'
+}
+
 // ---- State ----
 const state = ref<GameState>(newGame(3))
 const cardBackPath = ref<string | null>(null)
 const confirmSurrender = ref(false)
 const activeDropZone = ref<string | null>(null)
+
+const baseRankLabel = computed(() => RANK_LABELS[state.value.baseRank] ?? String(state.value.baseRank))
 
 // Drag tracking
 let dragSourceZone: ZoneId | null = null
@@ -246,6 +258,9 @@ onMounted(async () => {
         await window.api.setSavedGame(serialise(fresh))
       }
     }
+  }
+  if (state.value.won) {
+    onWin()
   }
   startTimer()
 })
@@ -309,22 +324,24 @@ const dynamicFoundationSuits = computed(() => {
 
 // ---- Save helper ----
 async function save(): Promise<void> {
-  if (window.api) await window.api.setSavedGame(serialise(state.value))
+  if (window.api && !state.value.won) {
+    await window.api.setSavedGame(serialise(state.value))
+  }
 }
 
 // ---- Stock ----
-function onClickStock(): void {
+async function onClickStock(): Promise<void> {
   if (state.value.stock.length > 0) {
     const next = drawFromStock(state.value)
     if (next) {
       state.value = next
-      save()
+      await save()
     }
   } else {
     const next = redealStock(state.value)
     if (next) {
       state.value = next
-      save()
+      await save()
     }
   }
 }
@@ -342,19 +359,22 @@ function onDragStartTableau(_card: Card, col: number, cardIdx: number): void {
   dragFromTableauIdx = cardIdx
 }
 
-function onDropToFoundation(fi: number): void {
+async function onDropToFoundation(fi: number): Promise<void> {
   activeDropZone.value = null
   if (!dragSourceZone) return
   const next = moveToFoundation(state.value, dragSourceZone, fi)
   if (next) {
     state.value = next
-    save()
-    if (next.won) onWin()
+    if (next.won) {
+      await onWin()
+    } else {
+      await save()
+    }
   }
   dragSourceZone = null
 }
 
-function onDropToTableau(toCol: number): void {
+async function onDropToTableau(toCol: number): Promise<void> {
   activeDropZone.value = null
   if (!dragSourceZone) return
   let next: GameState | null = null
@@ -369,7 +389,7 @@ function onDropToTableau(toCol: number): void {
   }
   if (next) {
     state.value = next
-    save()
+    await save()
   }
   dragSourceZone = null
   dragFromTableauCol = null
@@ -382,12 +402,15 @@ function onDropToTableauEmpty(_col: number, _zone: string): void {
 }
 
 // ---- Double-click auto-move ----
-function onDblClick(_card: Card, zone: ZoneId): void {
+async function onDblClick(_card: Card, zone: ZoneId): Promise<void> {
   const next = autoMoveToFoundation(state.value, zone)
   if (next) {
     state.value = next
-    save()
-    if (next.won) onWin()
+    if (next.won) {
+      await onWin()
+    } else {
+      await save()
+    }
   }
 }
 
@@ -395,8 +418,10 @@ function onDblClick(_card: Card, zone: ZoneId): void {
 async function onWin(): Promise<void> {
   stopTimer()
   if (window.api) {
+    console.log('Recording win...')
     await window.api.recordWin()
     await window.api.setSavedGame(null)
+    console.log('Win recorded and save cleared.')
   }
 }
 
@@ -405,8 +430,10 @@ async function doSurrender(): Promise<void> {
   confirmSurrender.value = false
   stopTimer()
   if (window.api) {
+    console.log('Recording surrender as loss...')
     await window.api.recordLoss()
     await window.api.setSavedGame(null)
+    console.log('Loss recorded.')
   }
   router.push('/')
 }
@@ -420,7 +447,7 @@ async function startNew(): Promise<void> {
   }
   const fresh = newGame(drawCount)
   state.value = fresh
-  save()
+  await save()
   startTimer()
 }
 </script>
@@ -512,8 +539,24 @@ async function startNew(): Promise<void> {
   position: relative;
 }
 .foundation-base-hint {
-  font-size: 28px;
-  opacity: 0.3;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.15;
+  pointer-events: none;
+  user-select: none;
+}
+.hint-rank {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+.hint-suit {
+  font-size: 24px;
+  line-height: 1;
 }
 .stock-waste-row {
   display: flex;

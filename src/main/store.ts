@@ -53,21 +53,19 @@ export function getStatistics(): Statistics {
 }
 
 export function recordWin(): void {
-  const stats = store.get('statistics')
-  store.set('statistics', {
-    gamesPlayed: stats.gamesPlayed + 1,
-    wins: stats.wins + 1,
-    losses: stats.losses
-  })
+  const currentPlayed = store.get('statistics.gamesPlayed', 0)
+  const currentWins = store.get('statistics.wins', 0)
+  
+  store.set('statistics.gamesPlayed', currentPlayed + 1)
+  store.set('statistics.wins', currentWins + 1)
 }
 
 export function recordLoss(): void {
-  const stats = store.get('statistics')
-  store.set('statistics', {
-    gamesPlayed: stats.gamesPlayed + 1,
-    wins: stats.wins,
-    losses: stats.losses + 1
-  })
+  const currentPlayed = store.get('statistics.gamesPlayed', 0)
+  const currentLosses = store.get('statistics.losses', 0)
+  
+  store.set('statistics.gamesPlayed', currentPlayed + 1)
+  store.set('statistics.losses', currentLosses + 1)
 }
 
 export function resetStatistics(): void {

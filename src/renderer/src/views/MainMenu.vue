@@ -63,8 +63,13 @@ const bgStyle = computed(() => {
 })
 
 async function startNewGame(): Promise<void> {
-  // Clear saved game first
-  if (window.api) await window.api.setSavedGame(null)
+  if (window.api) {
+    const saved = await window.api.getSavedGame()
+    if (saved) {
+      await window.api.recordLoss()
+    }
+    await window.api.setSavedGame(null)
+  }
   router.push('/game?new=1')
 }
 
