@@ -8,6 +8,8 @@ jobs:
   release:
     name: Build and Release
     runs-on: macos-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +25,7 @@ jobs:
         run: npm install
 
       - name: Build Mac App
-        run: npm run build:mac
+        run: npm run build:mac -- --publish never
         env:
           # This tells electron-builder to just package, not upload
           # (semantic-release will handle the upload)
