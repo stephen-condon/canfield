@@ -390,3 +390,35 @@ describe('auto-fill empty tableau from reserve', () => {
     expect(next.tableau[0][0].id).toBe(reserveCard.id)
   })
 })
+
+// ---- Stock Order Consistency ----
+describe('Stock Order Consistency', () => {
+  it('preserves the initial stock order after cycling through and reloading (Draw 3)', () => {
+    let state = newGame(3)
+    const initialStockIds = state.stock.map((c) => c.id)
+
+    while (state.stock.length > 0) {
+      state = drawFromStock(state)!
+    }
+
+    state = redealStock(state)!
+
+    const finalStockIds = state.stock.map((c) => c.id)
+    expect(finalStockIds).toEqual(initialStockIds)
+  })
+
+  it('preserves the initial stock order after cycling through and reloading (Draw 1)', () => {
+    let state = newGame(1)
+    const initialStockIds = state.stock.map((c) => c.id)
+
+    while (state.stock.length > 0) {
+      state = drawFromStock(state)!
+    }
+
+    state = redealStock(state)!
+
+    const finalStockIds = state.stock.map((c) => c.id)
+    expect(finalStockIds).toEqual(initialStockIds)
+  })
+})
+

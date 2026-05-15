@@ -124,7 +124,7 @@ export function drawFromStock(state: GameState): GameState | null {
   const count = Math.min(s.drawCount, s.stock.length)
   const drawn = s.stock.splice(s.stock.length - count, count)
   drawn.forEach((c) => (c.faceUp = true))
-  s.waste.push(...drawn)
+  s.waste.push(...drawn.reverse())
   s.moves++
   return s
 }
